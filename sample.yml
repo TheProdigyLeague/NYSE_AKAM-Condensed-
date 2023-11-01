@@ -1,0 +1,32 @@
+# this is a sample .yml template
+name:
+on: 
+  workflow_dispatch:
+    inputs:
+      ENVIRONMENT_TYPE: 
+        description: ''
+        required: true
+        default: 'dev'
+      APP_NAME_PREFIX: 
+        description: ''
+        required: true
+        default: 'prefix'
+      RESOURCE_GROUP_NAME: 
+        description: ''
+        required: true
+        default: ''
+      CLIENT_URL: 
+        description: ''
+        required: true
+        default: 'https://<cdn-endpoint-name>.azureedge.net'
+      API_URL: 
+        description: ''
+        required: true
+        default: 'https://<apim-name>.azure-api.net/<api-name>'
+# CONFIGURATION
+# For help, go to https://github.com/Azure/Actions
+#
+# 1. Set up the following secrets in your repository:
+#   AZURE_CREDENTIALS
+#
+# 2. Change below variables for your configuration:    

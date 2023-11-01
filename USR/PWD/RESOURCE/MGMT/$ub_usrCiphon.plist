@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>name</key>
+		<string>workflow to deploy an ARM Template to a Subscription Scope</string>
+		<key>on</key>
+		<string>push</string>
+		<key>env</key>
+		<dict>
+			<key>AZURE_SUBSCRIPTION_ID</key>
+			<string>&lt;&lt; Subscription Id &gt;&gt;</string>
+		</dict>
+		<key>jobs</key>
+		<dict>
+			<key>build-and-deploy-to-dev</key>
+			<dict>
+				<key>runs-on</key>
+				<string>ubuntu-latest</string>
+				<key>steps</key>
+				<array>
+					<dict>
+						<key>name</key>
+						<string>Azure Login</string>
+						<key>uses</key>
+						<string>azure/login@v1</string>
+						<key>with</key>
+						<dict>
+							<key>creds</key>
+							<string>${{ secrets.AZURE_CREDENTIALS  }}</string>
+						</dict>
+					</dict>
+					<dict>
+						<key>name</key>
+						<string>Checkout</string>
+						<key>uses</key>
+						<string>actions/checkout@v1</string>
+					</dict>
+					<dict>
+						<key>name</key>
+						<string>Deploy ARM Template</string>
+						<key>uses</key>
+						<string>azure/arm-deploy@v1</string>
+						<key>with</key>
+						<dict>
+							<key>scope</key>
+							<string>subscription</string>
+							<key>subscriptionId</key>
+							<string>${{ env.AZURE_SUBSCRIPTION_ID }}</string>
+							<key>region</key>
+							<string>centralus</string>
+							<key>template</key>
+							<string>$GITHUB_WORKSPACE/azuredeploy.json</string>
+							<key>parameters</key>
+							<string>$GITHUB_WORKSPACE/azuredeploy.parameters.json</string>
+						</dict>
+					</dict>
+				</array>
+			</dict>
+		</dict>
+	</dict>
+</plist>

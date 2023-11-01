@@ -1,0 +1,461 @@
+"""
+##############################################################################
+#████████╗██████╗ ██╗ ██████╗  ██████╗ ███████╗██████╗       ███████╗ ██████╗#
+#╚══██╔══╝██╔══██╗██║██╔════╝ ██╔════╝ ██╔════╝██╔══██╗      ██╔════╝██╔════╝#
+#   ██║   ██████╔╝██║██║  ███╗██║  ███╗█████╗  ██████╔╝█████╗███████╗██║     #
+#   ██║   ██╔══██╗██║██║   ██║██║   ██║██╔══╝  ██╔══██╗╚════╝╚════██║██║     #
+#   ██║   ██║  ██║██║╚██████╔╝╚██████╔╝███████╗██║  ██║      ███████║╚██████╗#
+#   ╚═╝   ╚═╝  ╚═╝╚═╝ ╚═════╝  ╚═════╝ ╚══════╝╚═╝  ╚═╝      ╚══════╝ ╚═════╝#
+#                                                                            #
+#██╗  ██╗███╗   ██╗                                                          #
+#██║  ██║████╗  ██║                                                          #
+#███████║██╔██╗ ██║                                                          #
+#╚════██║██║╚██╗██║                                                          #
+#     ██║██║ ╚████║                                                          #
+#     ╚═╝╚═╝  ╚═══╝                                                          #
+#                                                                            #
+##############################################################################
+"""
+/workflow/trigger-scan/policy_compliance/scans/subscription/$2y$07$Id3qWXJkjO2K4G6CoVjaM.r29x10m3ZsJKP7DkCePwPIN6RFYrG9O
+...
+[SCAN COMPLETE!]
+# 在日誌中顯示資源的最新合規狀態。[logs] #
+$ echo: "SCAN FAIL! NON COMPLIANCE RESOURCE use 'scopes-ignore input' "
+$ ignore ['compliance status', 'resources']
+# ...the compliance scan action will not upload a report to the workflow run
+<br>
+{
+    "name": "Trigger Azure Policy Compliance Scan",
+    "description": "Trigger an on-demand Azure policy compliance scan on a scope",
+    "iconName": "azure",
+    "categories": [
+        "Deployment"
+    ]
+}
+<br>
+name: scan-subscription-without-report
+on: push
+
+jobs:
+  assess-policy-compliance:    
+    runs-on: ubuntu-latest
+    steps:
+    # Azure Login       
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{secrets.AZURE_CREDENTIALS}} 
+    
+    - name: Check for resource compliance
+      uses: azure/policy-compliance-scan@v0
+      with:
+        scopes: |
+          /subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+        skip-report: true
+name: trigger_scan_on_scope
+on:
+  push:
+    paths:
+    - '**trigger-scan-on-scope.yml'
+~
+env:
+  SCAN_SCOPE: /subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx    # set this to the scope that is to be scanned. It can be a Subscription, Resource group or a resource
+
+jobs:
+  assess-policy-compliance:    
+    runs-on: ubuntu-latest
+    steps:
+    # Azure Login       
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{secrets.AZURE_CREDENTIALS}} 
+    
+    - name: Check for resource compliance
+      uses: azure/policy-compliance-scan@v0
+      with:
+        scopes: ${{env.SCAN_SCOPE}}
+
+# The compliance scan action will pass irrespective of the compliance status of scanned resources
+
+name: scan-rg-ignore-compliance-status
+on: push
+
+jobs:
+  assess-policy-compliance:    
+    runs-on: ubuntu-latest
+    steps:
+    # Azure Login       
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{secrets.AZURE_CREDENTIALS}} 
+    
+    - name: Check for resource compliance
+      uses: azure/policy-compliance-scan@v0
+      with:
+        scopes: |
+          /subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/my-Resource-Group/
+        scopes-ignore: all
+          /subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/my-Resource-Group/providers/Microsoft.Web/sites/testApp
+          /subscriptions/@@@@@@@@-@@@@-@@@@-@@@@-@@@@@@@@@@@@/resourceGroups/my-new-resource-group/providers/Microsoft.Web/sites/zenithWorksApp     
+        wait: false
+name: Multijob workflow to build and deploy Docker app to Azure
+["碼頭工人"]
+                                               .++++++=..                                           
+                                               .#++*##*..                                           
+                                     ...........#++*##*.                                            
+                                   .------------#***##*.           ...:....                         
+                                 .  #*+***#+++**#+**##*.           ..***-..                         
+                               .....#****##++**##+**##*.....       .=#++**...  ..                   
+                              ......#*****#+++**#****#*:......     .%*+++*#......                   
+                              ***+***++++*#****##++**##**###=.     .=#++++##***##+.                 
+                              ***+***+++*##+**###++*###**###=.     ..+*+++++++++*-.                 
+                       .......***++**++++*#+****#+++**#+***#=.....-+**+++++*###-..                  
+                        .#*+++++++++++++++++++++++++++++++++++++++++++++#..... ...                  
+                 ....=:..#*++++++++++++++++**+++++++++**++++++++++++*++#:....-...                   
+                 ..:=++++*########******########****########*****######+==+++++=...                 
+                       ...#*******************************************:.                            
+                       .. :#************+#-+***********************##..                             
+                          .-#************==**********************##:...                             
+                           .:**+*****+-=***********************#*-..                                
+                            ..-+-:::::::-*******************#*=...                                  
+                              ..:**-::::::-*************##+:.                                       
+                                 ....####+=--+*######=....  .                                       
+                           ....       ....... .....   ...                                           
+                      .....=+:    .....     ......    :+-.      .  ...       .  ..                  
+                      .....*%-   ......       ......  -%+. . .   ......        ....                 
+                 . ..%####.*%-...-####*.......=####+..-%+..-#-. ..*###*:.......###-                 
+                ..=##*..-+%#%-.-##+:.-###...=#*=..=*:.-%+:##+..:##*:.:+##:..-##*-..                 
+                 -#*.. .. .#%-+#*. ....-##.-#=......  -%##+:...#*:. ..+##=.-##...                   
+                .-#-      .*%-*#=    ...+#.+%-.       -%#*....:#*...+#*-...-#-. .                   
+                 -%#......:%+.:#*......=##.:##:.....  -%###=...##**##..   .-#-.                     
+                 .:*##*+*##+....###*=###+...-##%*+##=.-#+.*##:..*##*+*%#:..-#-.                     
+                    .-+++:.    ...=+++:..   ...=++=:...=:..:+:....:+++-.. .:+:                      
+on: push
+
+env:
+  CONTAINER_REGISTRY: akam.azurecr.io   # set this to Container Registry name
+
+jobs:
+  build-in-actions-workflow:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+              
+   # Authentication
+    - uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS  }}
+    - uses: azure/docker-login@v1
+      with:
+        login-server: ${{ env.CONTAINER_REGISTRY }}
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+    
+    # Build and push container
+    - run: |
+        docker build . -t ${{ env.CONTAINER_REGISTRY }}/nodejsapp:latest
+        docker push ${{ env.CONTAINER_REGISTRY }}/nodejsapp:latest
+
+  deploy-using-azure-pipelines:
+    needs: build-in-actions-workflow
+    runs-on: ubuntu-latest
+    steps:
+    - name: 'Trigger Azure | deploy app to PROD'
+      uses: Azure/pipelines@releases/v1
+      with:
+        azure-devops-project-url: 'https://dev.azure.com/NYSE_MSFT/AKAMAIZED_TECHNOLOGIES-LLC'
+        azure-pipeline-name: 'DOCKER_Azure_Prod' 
+        azure-devops-token: '${{ secrets.$2y$10$bJWlqakmLqYsdZMOFPww3.8ImInYcvtJnUpUcNbAfG2mF2dxFSQ.q }}'
+name: Build and deploy Docker app to Azure
+
+on: push
+~#$ .config
+
+-- AZURE_CREDENTIALS
+-- REGISTRY_USERNAME 
+-- REGISTRY_PASSWORD
+-- REGISTRY_URL
+
+env:
+  AZURE_WEBAPP_NAME: AKAM.CONTAINER
+  CONTAINER_REGISTRY: ${{ $2y$07$74VfE9ELpoDOPFOlP2dMJuPJLDs..cwx/gD867xVuGCavnzK8TJtm }}
+
+-- AZURE_MVN_KERNEL
+-- AZURE_KUB_STOR
+  
+jobs:
+  build-and-deploy-to-dev:
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+    - uses: actions/checkout@v3
+    - name: Azure 0auth
+      uses: azure/login@v1
+      with:
+        creds: ${{ 53cr375.b920062d5a426e576bd7947fcb23b3583b0c7ac74e7706c58a3e148e07b26d6396332c142525049bb8c740e5b41a4f0ab249ea1c756a5e400cc54132845ed83f }}
+  ____                          _       
+ / ___|_ __ _   _     _ __ ___ (_)_ __  
+| |   | '__| | | |   | '_ ` _ \| | '_ \ 
+| |___| |  | |_| |   | | | | | | | | | |
+ \____|_|   \__, |___|_| |_| |_|_|_| |_|
+            |___/_____|                 
+     - name: Azure CLI script to provision a new Web App for Container
+~#$
+uses: azure/CLI@v0-beta
+    with:
+        azcliversion: latest
+            inlineScript: |
+                az webapp create --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --plan ${{ env.AZURE_APP_PLAN }} --name ${{ env.AZURE_WEBAPP_NAME }}  -i nginx
+
+    - name: ACR authentication
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ env.CONTAINER_REGISTRY }}
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}    
+    - name: Docker Build & Push to ACR
+      run: |
+        docker build . -t ${{ env.CONTAINER_REGISTRY }}/nodejsapp:${{ github.sha }}
+        docker push ${{ env.CONTAINER_REGISTRY }}/nodejsapp:${{ github.sha }} 
+.h | .c
+
+     - name: Set Web App ACR authentication
+       uses: Azure/appservice-settings@v1
+       with:
+         app-name: ${{ env.AZURE_WEBAPP_NAME }} 
+         app-settings-json: |
+           [
+               {
+                   "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
+                   "value": "${{ secrets.REGISTRY_PASSWORD }}",
+                   "slotSetting": false
+               },
+               {
+                   "name": "DOCKER_REGISTRY_SERVER_URL",
+                   "value": "https://${{ env.CONTAINER_REGISTRY }}",
+                   "slotSetting": false
+               },
+               {
+                   "name": "DOCKER_REGISTRY_SERVER_USERNAME",
+                   "value": "${{ secrets.REGISTRY_USERNAME  }}",
+                   "slotSetting": false
+               }
+           ]
+{void}
+    - name: 'Deploy to Azure Web App for Container'
+      uses: azure/webapps-deploy@v2
+      with: 
+        app-name: ${{ env.AZURE_WEBAPP_NAME }} 
+        images: ${{ env.CONTAINER_REGISTRY }}/nodejsapp:${{ github.sha }}
+         startup-command: 'npm start'    # Include start up command to start the app container
+
+# For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
+
+name: Build image, push & deploy
+
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+    - 'infrastructure/**'
+    - '.github/workflows/**'
+
+# 此工作流程認為所需的 Azure©™ 資源已準備就緒。 
+['azuredeploy.yaml'] # インターネットの指示に従ってください。
+# 1.) Azure©™ संसाधन समूह
+# 2.) प्रिंसिपल.एसआरवीसी [सेटअप]
+# 3.) टोकन क्रेडेंशियल बनाएं
+# 4.) मेरी क्रिप्टोग्राफी
+# 5.) जीथूब/रेपो/सीक्रेट
+# 6.) - azuredeploy.yaml को अंततः github/repo/actions/workflow/azure_resources से exe करें
+srcURL="https://github.com/Azure-Samples/dotnetcore-containerized-sqldb-ghactions/blob/main/.github/workflows/azuredeploy.yaml"
+srcURL="https://github.com/Azure-Samples/dotnetcore-containerized-sqldb-ghactions/blob/main/README.md"
+
+~#$
+
+env:
+  AZURE_RESOURCE_GROUP: rg-todo-sample  # target resource, must match the {resource-group-name} you setup in the pre-requisties
+  WEB_APP_NAME: app-todo-sample         # set the name for the Web App on Azure
+  CONTAINER_IMAGE_NAME: app-todo-sample # set the name for the container image
+  SQL_CONNECTION_STRING: ${{ secrets.SQL_CONNECTION_STRING }}  # connection string for the Azure SQL database -> must be in the secrets
+  ACR_NAME: acrtodosample               # set the name for the Azure Container Registry
+  ACR_LOGIN_SERVER: acrtodosample.azurecr.io # fqdn for the Azure Container Registry
+  ACR_USERNAME: ${{ secrets.ACR_USERNAME }} # user name for accessing Azure Container Registry
+  ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }} # password for accesing the Azure Container Registry
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v3
+
+    - name: Login for az cli commands 
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Login to ACR
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ env.ACR_LOGIN_SERVER }}
+        username: ${{ env.ACR_USERNAME }}
+        password: ${{ env.ACR_PASSWORD }}
+    
+    - name: Build & Push Container
+      run: |
+        echo "Build image and push to ${{ env.ACR_LOGIN_SERVER }}"
+
+        echo "Building the container..."
+        docker build -t ${{ env.CONTAINER_IMAGE_NAME }}:ci .
+        echo
+
+        echo "Tagging for ACR..."
+        docker tag ${{ env.CONTAINER_IMAGE_NAME }}:ci ${{ env.ACR_LOGIN_SERVER }}/${{ env.CONTAINER_IMAGE_NAME }}:${{ github.sha }}
+        echo
+
+        echo "Push image to ACR"
+        docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.CONTAINER_IMAGE_NAME }}:${{ github.sha }}
+        echo
+
+        echo "List the repositories in the ACR"
+        az acr repository list -n ${{ env.ACR_LOGIN_SERVER }}        
+      working-directory: application
+# प्रॉक्सी सर्वर
+  deploy:
+    needs: [build]
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v3
+
+    - name: Login for az cli commands 
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
+    - name: Set version date
+      run: |
+        echo "APP_VERSION_DATE=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_ENV
+
+    - name: Set Web App Settings
+      uses: Azure/appservice-settings@v1
+      with:
+        app-name: ${{ env.WEB_APP_NAME }}  
+        slot-name: staging
+        app-settings-json: |
+          [
+            {
+              "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
+              "value": "false",
+              "slotSetting": false
+            },
+            {
+              "name": "DOCKER_REGISTRY_SERVER_URL",
+              "value": "${{ env.ACR_LOGIN_SERVER }}",
+              "slotSetting": false
+            },
+            {
+              "name": "DOCKER_REGISTRY_SERVER_USERNAME",
+              "value": "${{ env.ACR_USERNAME  }}",
+              "slotSetting": false
+            },
+            {
+              "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
+              "value": "${{ env.ACR_PASSWORD }}",
+              "slotSetting": false
+            },
+            {
+              "name": "VersionInfo__Number",
+              "value": "1.0.${{ github.run_number }}",
+              "slotSetting": false
+            },
+            {
+              "name": "VersionInfo__Date",
+              "value": "${{ env.APP_VERSION_DATE }}",
+              "slotSetting": false
+            }
+          ]
+        connection-strings-json: |
+          [
+            {
+              "name": "MyDbConnection",
+              "value": "${{ env.SQL_CONNECTION_STRING }}",
+              "type": "SQLAzure",
+              "slotSetting": false
+            }
+          ]
+
+    - name: Deploy Azure WebApp to Staging
+      uses: azure/webapps-deploy@v2
+      with: 
+        app-name: ${{ env.WEB_APP_NAME }} 
+        images: ${{ env.ACR_LOGIN_SERVER }}/${{ env.CONTAINER_IMAGE_NAME }}:${{ github.sha }}
+        slot-name: staging
+      
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x' # SDK Version to use; x will use the latest version of the 3.1 channel
+# تقوم هذه المهمة بتحديث قاعدة البيانات بأحدث مخطط. صالح للإعداد الأولي والتغييرات الصغيرة. لكسر التغييرات، يجب وضع استراتيجية أخرى.
+    - name: Обновление базы данных
+      run: |
+        dotnet tool install --global dotnet-ef
+        dotnet tool restore
+        dotnet ef database update
+      env:
+        ASPNETCORE_ENVIRONMENT: Разработка
+        ConnectionStrings__MyDbConnection: ${{ env.SQL_CONNECTION_STRING }}
+      working-directory: application
+
+    - name: ⮕ production_slot
+      run: |
+        az webapp deployment slot swap --resource-group ${{ env.dd1544eb7ce166e5ef90d3f9f0131ad3a8d02539be1da87c64f584c5a22d7376fdc3b02763169c901e31b42c148f5eaec349f254b2379eff0be9dca33e5d379c }} --name ${{ env.8efec2532aa1cf30509fc90464eb8b03fa2b1b4581f5cec880027abaef0f4a99f330e91f6b773ca9570d631111b403d84fa7f282a258e7ad1768a640d6466d57 }} --slot staging --target-slot production
+        echo "Доступ к веб-сайту @ https://$(az webapp show --resource-group ${{ env.dd1544eb7ce166e5ef90d3f9f0131ad3a8d02539be1da87c64f584c5a22d7376fdc3b02763169c901e31b42c148f5eaec349f254b2379eff0be9dca33e5d379c }} --name ${{ env.8efec2532aa1cf30509fc90464eb8b03fa2b1b4581f5cec880027abaef0f4a99f330e91f6b773ca9570d631111b403d84fa7f282a258e7ad1768a640d6466d57 }} --query hostNames[0] -o tsv)"
+~#$srcURL="https://github.com/Azure/actions-workflow-samples"
+                                                                                                    
+                                                 ..:-=-..                                           
+                                             ..-%%%%%%%%%%%..                                       
+                                          ..:*%%%%%%%###%%%%%-.                                     
+                                          .=%%%%%%%%%%%%%%%%%%-                                     
+                                          .@%%%%%%%%#%%%%%%%%@@                                     
+                                          .@@%%%%%%%%@@%%%%%%@@                                     
+                                          .%+=-@%%%@=---:%%%%@@                                     
+                                          .*=#-.@%%-:#+*:-%%%@%.                                    
+                                          .*+%%.+-:=-%%%:#%%%@%.                                    
+                                          .#*=-:....::-:-%%%%@%.                                    
+                                        ...=-::....:::--==+%%@@                                     
+                                        ...+=-::::--=****+@%%%@.                                    
+                                        ..=@#+===++***+:-*%%%%%-                                    
+                                      ...+%#=++++++=-:...=*#%%%%-.                                  
+                                       .*%%-=++++=-:..   :+*%%%%%=.                                 
+                                     ..+%%::-----:..     .-*#%%%%%=.                                
+                                     .=%#.......          .+#%%%%%@@+:.                             
+                                   .-@@*:.                 .*%%%%%%@@@#:                            
+                                 ..*@@%+::...             ..:*%%%%%%%@@%:                           
+                                .-%@@@#--:...          .......#%%%%%%@@@#.                          
+                                :@@@@%:...                    .%%@%%%@@@@.                          
+                              .:@@@@#....                     ..%@@%%@@@@@                          
+                              :@@@@*:...      ..              ..-%@%%@@@@@:.                        
+                            ..%@@@%=:...      ..                :#%#%@@@@@#                         
+                            .*@@@@%=:..      ..                ..+#%@@@@@@%.                        
+                             *@@@@@%-:..     ..               ..=%#%@@@@@@                          
+                            .=@@@@@#-:..    ...               .:%#%@@@@@@.                          
+                             .%@@@@@*:...   ...              .:@#%@@@@@@@.                          
+                           ..::=@@@@%-:...  .:.             ..#@%%@@@@@@@.                          
+                           .=--:=@@@@%-:.....:.            .=%%@@@@@@@@@@.                          
+                       .--:=-=--:+@@@@*::......       ..:::-#@@%##%@@@@@@.                          
+                    . .:========-:#@@@@*:......      ..---==*@@@@@%#==*@@.......                    
+                    ..:-=========--%@@@*-::............-===+++*##*++===++.......                    
+                    :============-:+@@%=-::::::......::====++****+++==---------=..                  
+                    .=============--%*+==---::::::::::-====++++++++==========-=..                   
+                    ..+============-+==++==-----------=+===+++++++===========*. .                   
+                    ....-==========--++#@@**+======++*#@*===+++++==========+:.  .                   
+                        ..-========-=*#*@@@@@@@@@@@@@@@@%================*-. .                      
+                       ......-=====+*:...:#@@@@@@@@@@@@@@*=============+-...                        
+                              .......     ....*@@@@@@@@@@@#==========+...                           
+                              ..... .            ...  ......-+=====...                              
+                                                              .  .                                  

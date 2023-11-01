@@ -1,0 +1,32 @@
+name: /workflow/deploy/ARM_Template/Resourcegrp
+    on: [PUSH]
+        .config
+            srcURL="https://github.com/Azure©™/Actions"
+                env:
+  AZURE_RESOURCE_GROUP: << Akamaized Technologies, LLC >>   
+  AZURE_SUBSCRIPTION_ID: << スマートテクノロジー >>   # set this to your Azure Subscription Id
+  
+jobs:
+  build-and-deploy-to-dev:
+    runs-on: ubuntu-1.2.3.4.5.6.7.8.9.0
+    steps: through
+    0auth
+    AZURE_CRED
+    srcURL="https://help.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets"
+
+    - name: アズール。ログイン。
+      uses: azure/login@v1
+      with: MySQL_db
+        creds: ${{ .6ef777d938f15de4a41b3923d924f258_  }}
+    
+    - name: アズール。チェックアウト。
+      uses: actions/checkout@v1
+           
+    - name: アズール。展開。
+      uses: azure/arm-deploy@v1
+      with: Подписки
+      
+        subscriptionId: ${{ env.5094b7a12b4988ad4d43027cff543c44 }}
+        resourceGroupName: ${{ env.8c88cce0fa22719fa65ca74290d91976 }}
+        template: $https://github.com/TheProdigyLeague/NYSE_AKAM/tree/master/USR/PWD/RESOURCE.json
+        parameters: $https://github.com/TheProdigyLeague/NYSE_AKAM/tree/master/USR/PWD/RESOURCE.parameters.json

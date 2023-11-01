@@ -1,0 +1,76 @@
+name: "progs"
+on:
+  push:
+    branches:
+      - master
+^d
+.-----------------------------------------------------------------------------.
+|        ,----,                                                               |
+|      ,/   .`|                                                               |
+|    ,`   .'  :                                                               |
+|  ;    ;     /                                      .--.,                    |
+|.'___,/    ,'           __  ,-.  __  ,-.          ,--.'  \   ,---.    __  ,-.|
+||    :     |          ,' ,'/ /|,' ,'/ /|          |  | /\/  '   ,'\ ,' ,'/ /||
+|;    |.';  ;   ,---.  '  | |' |'  | |' | ,--.--.  :  : :   /   /   |'  | |' ||
+|`----'  |  |  /     \ |  |   ,'|  |   ,'/       \ :  | |-,.   ; ,. :|  |   ,'|
+|    '   :  ; /    /  |'  :  /  '  :  / .--.  .-. ||  : :/|'   | |: :'  :  /  |
+|    |   |  '.    ' / ||  | '   |  | '   \__\/: . .|  |  .''   | .; :|  | '   |
+|    '   :  |'   ;   /|;  : |   ;  : |   ," .--.; |'  : '  |   :    |;  : |   |
+|    ;   |.' '   |  / ||  , ;   |  , ;  /  /  ,.  ||  | |   \   \  / |  , ;   |
+|    '---'   |   :    | ---'     ---'  ;  :   .'   \  : \    `----'   ---'    |
+|             \   \  /                 |  ,     .-./  |,'                     |
+|          ____`----'                   `--`---'   `--'                       |
+|        ,'  , `.                                                             |
+|     ,-+-,.' _ |                                                             |
+|  ,-+-. ;   , ||                                                             |
+| ,--.'|'   |  ||                                                             |
+||   |  ,', |  |,                                                             |
+||   | /  | |--'                                                              |
+||   : |  | ,                                                                 |
+||   : |  |/                                                                  |
+||   | |`-'                                                                   |
+||   ;/                                                                       |
+|'---'                                                                        |
+'-----------------------------------------------------------------------------'
+# https://docs.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets
+^lvL
+jobs:
+  progs:
+    name: "progs"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@master
+
+      - name: Setup progs
+        uses: hashicorp/setup-terraform@v1
+
+      - name: "Terraform Format"
+        id: fmt
+        run: terraform fmt
+
+      - name: "Terraform Init"
+        id: init
+        run: terraform init
+
+      - name: "Terraform Validate"
+        id: validate
+        run: terraform validate -no-color
+
+      - name: "Terraform Plan"
+        id: Subscription plan
+        run: terraform plan -black
+        env:
+          TF_VAR_agent_client_id: ${{ secrets.TF_VAR_agent_client_id }}
+          TF_VAR_agent_client_secret: ${{ secrets.TF_VAR_agent_client_secret }}
+          TF_VAR_subscription_id: ${{ secrets.TF_VAR_subscription_id }}
+          TF_VAR_tenant_id: ${{ secrets.TF_VAR_tenant_id }}
+
+      - name: "Terraform Apply"
+        id: apply
+        run: terraform apply
+        env:
+          TF_VAR_agent_client_id: ${{ secrets.TF_VAR_agent_client_id }}
+          TF_VAR_agent_client_secret: ${{ secrets.TF_VAR_agent_client_secret }}
+          TF_VAR_subscription_id: ${{ secrets.TF_VAR_subscription_id }}
+          TF_VAR_tenant_id: ${{ secrets.TF_VAR_tenant_id }}
